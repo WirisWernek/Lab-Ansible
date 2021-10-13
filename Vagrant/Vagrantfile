@@ -1,0 +1,28 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+vms = {
+  'master' => {'memory' => '1024', 'cpus' => 1, 'ip' => '20', 'box' => 'centos/8', 'provision' => 'centos8.sh'},
+  'node1' => {'memory' => '1024', 'cpus' => 1, 'ip' => '21', 'box' => 'centos/8', 'provision' => 'centos8.sh'},
+  'node2' => {'memory' => '1024', 'cpus' => 1, 'ip' => '22', 'box' => 'centos/8', 'provision' => 'centos8.sh'},
+  'node3' => {'memory' => '1024', 'cpus' => 1, 'ip' => '23', 'box' => 'centos/8', 'provision' => 'centos8.sh'}
+}
+
+Vagrant.configure('2') do |config|
+
+  config.vm.box_check_update = false
+
+  vms.each do |name, conf|
+    config.ssh.forward_agent = true
+    config.vm.define "#{name}" do |my|
+      my.vm.box = conf['box']
+      my.vm.hostname = "#{name}.dexter.com.br"
+      my.vm.network 'public_network', ip: "192.168.0.#{conf['ip']}", bridge: "enp8s0"
+      my.vm.provision 'shell', path: "./#{conf['provision']}"
+      my.vm.provider 'virtualbox' do |vb|
+        vb.name = "#{name}"
+        vb.memory = conf['memory']
+        vb.cpus = conf['cpus']
+      end
+    end
+  end
+end
